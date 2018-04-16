@@ -1,0 +1,18 @@
+{
+  "app_name": "<application_name>",
+  "app_memory": "<default_memory>",
+  "artifact_path": "<ARTIFACT PATH - including the artifact>",
+  "cf": {
+    "api_endpoint": "api.<SYSTEM-DOMAIN>",
+    "user": "<CF_USERNAME>",
+    "password": "<CF_PASSWORD>",
+    "org": "<ORG_NAME>",
+    "space": "<SPACE_NAME>",
+    "apps_domain": {
+      "internal": "<internal domain for local testing>",
+      "external": "<shared/external domain for end users>"
+    }
+  },
+  "external_app_hostname": "<name used to set the hostname for the app>",
+  "push_options": "--no-manifest --no-start --health-check-type=process"
+}

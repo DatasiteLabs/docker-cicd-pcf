@@ -1,7 +1,8 @@
 FROM alpine:3.7
 
 RUN apk update && \
-	apk add bash
+	apk add bash && \
+	apk add jq
 
 RUN wget -qO- "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx && \
 	mv cf /usr/local/bin && \
