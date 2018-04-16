@@ -1,0 +1,15 @@
+FROM alpine:3.7
+
+RUN apk update && \
+	apk add bash
+
+RUN wget -qO- "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx && \
+	mv cf /usr/local/bin && \
+	cf --version
+
+RUN addgroup -g 1000 -S pcf && \
+	adduser -u 1000 -S pcf -G pcf -s /bin/bash -h /home/pcf
+
+#ENTRYPOINT ["/bin/bash"]
+CMD ["bash"]
+#CMD ["cf", "--version"]
