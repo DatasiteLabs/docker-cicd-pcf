@@ -4,12 +4,16 @@ docker_version=$(cat VERSION)
 
 usage() {
     cat <<END
-${curDir}/run.sh
+${curDir}/run.sh [cf] deploy-params.json
+cf: optionally execute cf commands against your space
+defaults to rolling deploy script
 
 Run the docker container for mrllsvc/pcf-tools:${docker_version}
     -h: show this help message
 END
 }
+
+# TODO: swithc default mode to cf.
 
 while getopts ":h" opt; do
     case $opt in
@@ -35,14 +39,14 @@ if [[ ${cf_cli} == false ]]; then
 	docker run \
 			-t --rm \
 			--name pcf-tools \
-			-v /home/jenkins/tools/:/home/pcf \
-			mrllsvc/pcf-tools:"${docker_version}" bash /home/pcf/rolling-deploy.sh -d "$@"
+			-v "${curDir}"/tools/:/home/pcf \
+			mrllsvc/pcf-tools:"${docker_version}" bash rolling-deploy.sh -d "$@"
 else
 	echo "running cf cli"
 	shift
 	docker run \
 			-t --rm \
 			--name pcf-tools \
-			-v /home/jenkins/tools/:/home/pcf \
-			mrllsvc/pcf-tools:"${docker_version}" bash /home/pcf/cf-cli.sh -d "$@"
+			-v "${curDir}"/tools/:/home/pcf \
+			mrllsvc/pcf-tools:"${docker_version}" bash cf-cli.sh -d "$@"
 fi

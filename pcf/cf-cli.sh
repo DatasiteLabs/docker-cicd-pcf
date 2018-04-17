@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -e
 curDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 declare is_debug=false
@@ -33,7 +33,7 @@ done
 
 shift $(( OPTIND -1 ))
 [[ $1 ]] || { echo "missing an argument. first argument must be location of json file with vars" >&2; exit 1; }
-declare json_file="${curDir}/${1}"
+declare json_file="${1}"
 
 # set cf vars
 read -r CF_API_ENDPOINT CF_USER CF_PASSWORD CF_ORG CF_SPACE CF_INTERNAL_APPS_DOMAIN CF_EXTERNAL_APPS_DOMAIN <<<$(jq -r '.cf | "\(.api_endpoint) \(.user) \(.password) \(.org) \(.space) \(.apps_domain.internal) \(.apps_domain.external)"' ${json_file})
