@@ -26,8 +26,23 @@ while getopts ":h" opt; do
     esac
 done
 
-docker run \
-		-d -t --rm \
-		--name pcf-tools \
-		-u pcf \
-		mrllsvc/pcf-tools:"${docker_version}"
+declare cf_cli=false
+shift $(( OPTIND -1 ))
+[[ $1 == 'cf' ]] && cf_cli=true
+
+if [[ ${cf_cli} == false ]]; then
+	echo "running rolling deploy"
+	docker run \
+			-t --rm \
+			--name pcf-tools \
+			-v /home/jenkins/tools/:/home/pcf \
+			mrllsvc/pcf-tools:"${docker_version}" bash /home/pcf/rolling-deploy.sh -d "$@"
+else
+	echo "running cf cli"
+	shift
+	docker run \
+			-t --rm \
+			--name pcf-tools \
+			-v /home/jenkins/tools/:/home/pcf \
+			mrllsvc/pcf-tools:"${docker_version}" bash /home/pcf/cf-cli.sh -d "$@"
+fi
