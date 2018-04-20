@@ -102,7 +102,7 @@ if [[ ! -z "${DEPLOYED_APP}" && "${DEPLOYED_APP}" != "" ]]; then
     cf delete ${DEPLOYED_APP} -f
 fi
 
-// TODO: move rename into replace delete old app to keep metrics
+# TODO: move rename into replace delete old app to keep metrics
 #echo "Renaming ${APP_NAME} to ${APP_NAME}-old"
 #cf rename "${APP_NAME}" "${APP_NAME}-old"
 #
