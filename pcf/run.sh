@@ -39,7 +39,7 @@ if [[ ${cf_cli} == false ]]; then
 	docker run \
 			-t --rm \
 			--name pcf-tools \
-			-v "${curDir}"/tools/:/home/pcf \
+			-v "${curDir}"/tools/:/home/pcf/tools \
 			mrllsvc/pcf-tools:"${docker_version}" bash rolling-deploy.sh -d "$@"
 else
 	echo "running cf cli"
@@ -47,6 +47,6 @@ else
 	docker run \
 			-t --rm \
 			--name pcf-tools \
-			-v "${curDir}"/tools/:/home/pcf \
+			-v "${curDir}"/tools/:/home/pcf/tools \
 			mrllsvc/pcf-tools:"${docker_version}" bash cf-cli.sh -d "$@"
 fi

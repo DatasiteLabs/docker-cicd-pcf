@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -o errexit
-curDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 declare is_debug=false
 usage() {
@@ -34,7 +33,7 @@ done
 
 shift $(( OPTIND -1 ))
 [[ $1 ]] || { echo "missing an argument. first argument must be location of json file with vars" >&2; exit 1; }
-declare json_file="${curDir}/${1}"
+declare json_file="${1}"
 
 # set cf vars
 read -r CF_API_ENDPOINT CF_USER CF_PASSWORD CF_ORG CF_SPACE CF_INTERNAL_APPS_DOMAIN CF_EXTERNAL_APPS_DOMAIN <<<$(jq -r '.cf | "\(.api_endpoint) \(.user) \(.password) \(.org) \(.space) \(.apps_domain.internal) \(.apps_domain.external)"' ${json_file})
@@ -66,12 +65,12 @@ declare -i DEPLOYED_APP_INSTANCES=$(cf curl /v2/apps -X GET -H 'Content-Type: ap
 
 [[ $is_debug == true ]] && echo "DEPLOYED APP: ${DEPLOYED_APP} DEPLOYED APP INSTANCES: ${DEPLOYED_APP_INSTANCES}"
 
-[[ -d ${curDir}/${ARTIFACT_PATH} ]] || (echo "exiting before deploy. ${curDir}/${ARTIFACT_PATH} does not exist" && exit 1)
+[[ -d ${ARTIFACT_PATH} ]] || (echo "exiting before deploy. ${ARTIFACT_PATH} does not exist" && exit 1)
 
 cf push "${APP_NAME}-${BUILD_NUMBER}" -i 1 -m ${APP_MEMORY} \
   -n "${APP_NAME}-${BUILD_NUMBER}" -d "${CF_INTERNAL_APPS_DOMAIN}" \
   -b https://github.com/cloudfoundry/staticfile-buildpack.git \
-  -p ${curDir}/${ARTIFACT_PATH} ${PUSH_OPTIONS}
+  -p ${ARTIFACT_PATH} ${PUSH_OPTIONS}
 
 
 cf start "${APP_NAME}-${BUILD_NUMBER}"

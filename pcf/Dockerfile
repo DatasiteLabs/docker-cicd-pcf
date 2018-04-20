@@ -9,11 +9,12 @@ RUN wget -qO- "https://packages.cloudfoundry.org/stable?release=linux64-binary&s
 	cf --version
 
 RUN addgroup -g 1000 -S pcf && \
-	adduser -u 1000 -S pcf -G pcf -s /bin/bash -h /home/pcf
+    adduser -u 1000 -S pcf -G pcf
 
 #ENTRYPOINT ["/bin/bash"]
 COPY cf-cli.sh /usr/local/bin
 COPY rolling-deploy.sh /usr/local/bin
-VOLUME /home/pcf
+VOLUME /home/pcf/tools
+WORKDIR /home/pcf
 CMD ["bash"]
 #CMD ["cf", "--version"]
