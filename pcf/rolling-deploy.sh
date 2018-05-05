@@ -58,7 +58,7 @@ fi
 cf api --skip-ssl-validation $CF_API_ENDPOINT
 cf login -u $CF_USER -p $CF_PASSWORD -o $CF_ORG -s $CF_SPACE
 
-DEPLOYED_APP=$(cf apps | grep "${APP_NAME}"\* | cut -d' ' -f1)
+DEPLOYED_APP=$(cf apps | grep '^'"${APP_NAME}"'' | cut -d' ' -f1)
 space_guid=$(cf space "${CF_SPACE}" --guid)
 declare -i DEPLOYED_APP_INSTANCES=$(cf curl /v2/apps -X GET -H 'Content-Type: application/x-www-form-urlencoded' -d "q=name:${APP_NAME}" | jq -r --arg DEPLOYED_APP "${DEPLOYED_APP}" \
   ".resources[] | select(.entity.space_guid == \"${space_guid}\") | select(.entity.name == \"${DEPLOYED_APP}\") | .entity.instances | numbers")
