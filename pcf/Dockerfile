@@ -4,7 +4,8 @@ RUN apk update && apk add \
 	bash \ 
 	jq \ 
 	curl \ 
-	git 
+	git \
+	tar
 
 RUN wget -qO- "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx && \
 	mv cf /usr/local/bin && \
