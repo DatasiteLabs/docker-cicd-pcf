@@ -1,15 +1,17 @@
 FROM alpine:3.7
 
-RUN apk update && \
-	apk add bash && \
-	apk add jq
+RUN apk update && apk add \ 
+	bash \ 
+	jq \ 
+	curl \ 
+	git 
 
 RUN wget -qO- "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx && \
 	mv cf /usr/local/bin && \
 	cf --version
 
 RUN addgroup -g 1000 -S pcf && \
-    adduser -u 1000 -S pcf -G pcf
+	adduser -u 1000 -S pcf -G pcf
 
 #ENTRYPOINT ["/bin/bash"]
 COPY cf-cli.sh /usr/local/bin
