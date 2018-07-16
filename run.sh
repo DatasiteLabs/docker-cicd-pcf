@@ -6,6 +6,7 @@ usage() {
     cat <<END
 ${curDir}/run.sh [cf] deploy-params.json
 cf: optionally execute cf commands against your space
+deploy-params.json: json with values consumed by rolling-deploy.sh, see toos/deploy-params.json.example for format
 defaults to rolling deploy script
 
 Run the docker container for mrllsvc/pcf-tools:${docker_version}
