@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -o errexit
+set -o nounset
 
 declare is_debug=false
 usage() {
@@ -12,6 +13,11 @@ jsonFile: jsonFile with all the vars needed to run the script. see: example
     -h: show this help message
 END
 }
+
+error () {
+    echo "Error: $1"
+    exit "$2"
+} >&2
 
 while getopts ":hd" opt; do
     case $opt in
@@ -32,15 +38,16 @@ while getopts ":hd" opt; do
 done
 
 shift $(( OPTIND -1 ))
-[[ $1 ]] || { echo "missing an argument. first argument must be location of json file with vars" >&2; exit 1; }
+[[ -f ${1} ]] || { echo "missing an argument. first argument must be location of json file with vars" >&2; exit 1; }
 declare json_file="${1}"
 
 # set cf vars
-read -r CF_API_ENDPOINT CF_USER CF_PASSWORD CF_ORG CF_SPACE CF_INTERNAL_APPS_DOMAIN CF_EXTERNAL_APPS_DOMAIN <<<$(jq -r '.cf | "\(.api_endpoint) \(.user) \(.password) \(.org) \(.space) \(.apps_domain.internal) \(.apps_domain.external)"' ${json_file})
-read -r APP_NAME APP_MEMORY ARTIFACT_PATH BUILD_NUMBER EXTERNAL_APP_HOSTNAME PUSH_OPTIONS <<<$(jq -r '. | "\(.app_name) \(.app_memory) \(.artifact_path) \(.build_number) \(.external_app_hostname) \(.push_options)"' ${json_file})
+read -r CF_API_ENDPOINT CF_BUILDPACK CF_USER CF_PASSWORD CF_ORG CF_SPACE CF_INTERNAL_APPS_DOMAIN CF_EXTERNAL_APPS_DOMAIN <<<$(jq -r '.cf | "\(.api_endpoint) \(.buildpack) \(.user) \(.password) \(.org) \(.space) \(.apps_domain.internal) \(.apps_domain.external)"' "${json_file}")
+read -r APP_NAME APP_MEMORY ARTIFACT_PATH BUILD_NUMBER EXTERNAL_APP_HOSTNAME PUSH_OPTIONS <<<$(jq -r '. | "\(.app_name) \(.app_memory) \(.artifact_path) \(.build_number) \(.external_app_hostname) \(.push_options)"' "${json_file}")
 
 if [[ $is_debug == true ]]; then
 	echo "${CF_API_ENDPOINT}"
+    echo "${CF_BUILDPACK}"    
 	echo "${CF_USER}"
 	echo "${CF_PASSWORD}"
 	echo "${CF_ORG}"
@@ -55,8 +62,8 @@ if [[ $is_debug == true ]]; then
 	echo "${PUSH_OPTIONS}"
 fi
 
-cf api --skip-ssl-validation $CF_API_ENDPOINT
-cf login -u $CF_USER -p $CF_PASSWORD -o $CF_ORG -s $CF_SPACE
+cf api --skip-ssl-validation "${CF_API_ENDPOINT}"
+cf login -u "${CF_USER}" -p "${CF_PASSWORD}" -o "${CF_ORG}" -s "${CF_SPACE}"
 
 DEPLOYED_APP=$(cf apps | grep '^'"${APP_NAME}"'' | cut -d' ' -f1)
 space_guid=$(cf space "${CF_SPACE}" --guid)
@@ -69,14 +76,14 @@ declare -i DEPLOYED_APP_INSTANCES=$(cf curl /v2/apps -X GET -H 'Content-Type: ap
 
 cf push "${APP_NAME}-${BUILD_NUMBER}" -i 1 -m ${APP_MEMORY} \
   -n "${APP_NAME}-${BUILD_NUMBER}" -d "${CF_INTERNAL_APPS_DOMAIN}" \
-  -b https://github.com/cloudfoundry/staticfile-buildpack.git \
-  -p ${ARTIFACT_PATH} ${PUSH_OPTIONS}
+  -b "${CF_BUILDPACK}" \
+  -p "${ARTIFACT_PATH}" ${PUSH_OPTIONS}
 
 
 cf start "${APP_NAME}-${BUILD_NUMBER}"
 
 echo "Performing zero-downtime cutover to ${APP_NAME}-${BUILD_NUMBER}"
-cf map-route "${APP_NAME}-${BUILD_NUMBER}" ${CF_EXTERNAL_APPS_DOMAIN} -n ${EXTERNAL_APP_HOSTNAME}
+cf map-route "${APP_NAME}-${BUILD_NUMBER}" "${CF_EXTERNAL_APPS_DOMAIN}" -n "${EXTERNAL_APP_HOSTNAME}"
 
 echo "A/B deployment"
 if [[ ! -z "${DEPLOYED_APP}" && "${DEPLOYED_APP}" != "" ]]; then
@@ -96,10 +103,10 @@ if [[ ! -z "${DEPLOYED_APP}" && "${DEPLOYED_APP}" != "" ]]; then
     done
 
     echo "Unmapping the external route from the application ${DEPLOYED_APP}"
-    cf unmap-route "${DEPLOYED_APP}" ${CF_EXTERNAL_APPS_DOMAIN} -n ${EXTERNAL_APP_HOSTNAME}
+    cf unmap-route "${DEPLOYED_APP}" "${CF_EXTERNAL_APPS_DOMAIN}" -n "${EXTERNAL_APP_HOSTNAME}"
 
     echo "Deleting the application ${DEPLOYED_APP}"
-    cf delete ${DEPLOYED_APP} -f
+    cf delete "${DEPLOYED_APP}" -f
 fi
 
 # TODO: move rename into replace delete old app to keep metrics

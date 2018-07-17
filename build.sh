@@ -13,6 +13,11 @@ Build docker container and push to dockerhub mrllsvc/
 END
 }
 
+error () {
+    echo "Error: $1"
+    exit "$2"
+} >&2
+
 while getopts ":hv" opt; do
     case $opt in
         h)
@@ -33,8 +38,8 @@ while getopts ":hv" opt; do
     esac
 done
 
-echo "building and pushing version: ${docker_version}"
+echo "building version: ${docker_version} locally"
 
 docker build --pull -t mrllsvc/pcf-tools:"${docker_version}" -t mrllsvc/pcf-tools:latest .
-docker push mrllsvc/pcf-tools:"${docker_version}"
-docker push mrllsvc/pcf-tools:latest
+# docker push mrllsvc/pcf-tools:"${docker_version}"
+# docker push mrllsvc/pcf-tools:latest
