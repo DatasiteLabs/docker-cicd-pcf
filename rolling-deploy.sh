@@ -77,7 +77,7 @@ declare -i DEPLOYED_APP_INSTANCES=$(cf curl /v2/apps -X GET -H 'Content-Type: ap
 cf push "${APP_NAME}-${BUILD_NUMBER}" -i 1 -m ${APP_MEMORY} \
   -n "${APP_NAME}-${BUILD_NUMBER}" -d "${CF_INTERNAL_APPS_DOMAIN}" \
   -b "${CF_BUILDPACK}" \
-  -p "${ARTIFACT_PATH}" "${PUSH_OPTIONS}"
+  -p "${ARTIFACT_PATH}" ${PUSH_OPTIONS}
 
 
 cf start "${APP_NAME}-${BUILD_NUMBER}"
