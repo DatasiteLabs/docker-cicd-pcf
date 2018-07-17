@@ -16,11 +16,19 @@ edit your values in the new file.
 *NOTE*: these are sensitve values, ignored by github and .dockerignore. if buidling in CI make sure you cleanup after creating the file.
 
 ## run
-wrapper shell script
-### rolling deploy
+### ./run.sh wrapper script
+#### rolling deploy
 `./run.sh tools/deploy-params.json`
 
-### cf commands
+#### cf commands
 example of cf target, any cf command will pass through
 
 `./run.sh cf target`
+
+### docker run example
+```
+docker run \
+            -ti --rm \
+            --name pcf-tools \
+            mrllsvc/pcf-tools:10 bash
+```

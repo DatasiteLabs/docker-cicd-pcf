@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -o errexit
+set -o nounset
 
 declare is_debug=false
 usage() {
@@ -12,6 +13,11 @@ jsonFile: jsonFile with all the vars needed to run the script. see: example
     -h: show this help message
 END
 }
+
+error () {
+    echo "Error: $1"
+    exit "$2"
+} >&2
 
 while getopts ":hd" opt; do
     case $opt in
