@@ -7,7 +7,7 @@ docker_version=$(cat VERSION)
 
 usage() {
     cat <<END
-${curDir}/run.sh [cf] deploy-params.json
+${curDir}/run.sh [cf]
 cf: optionally execute cf commands against your space
 deploy-params.json: json with values consumed by rolling-deploy.sh, see toos/deploy-params.json.example for format
 defaults to rolling deploy script
@@ -40,8 +40,10 @@ while getopts ":h" opt; do
 done
 
 declare cf_cli=false
+declare json_file="${curDir}/tools/deploy-params.json"
 shift $(( OPTIND -1 ))
 [[ $1 == 'cf' ]] && cf_cli=true
+[[ -f "${json_file}"  ]] || { echo "${json_file} doesn't exist. copy example file and edit." >&2; exit 1; }
 
 if [[ ${cf_cli} == false ]]; then
 	echo "running rolling deploy"
@@ -57,5 +59,5 @@ else
 			-ti --rm \
 			--name pcf-tools \
 			-v "${curDir}"/tools/:/home/pcf/tools \
-			mrllsvc/pcf-tools:"${docker_version}" bash cf-cli.sh -d "$@"
+			mrllsvc/pcf-tools:"${docker_version}" bash cf-cli.sh -d /home/pcf/tools/deploy-params.json "$@"
 fi
