@@ -40,9 +40,9 @@ while getopts ":h" opt; do
 done
 
 declare cf_cli=false
-declare json_file="${curDir}/tools/deploy-params.json"
+declare json_file="tools/deploy-params.json"
 shift $(( OPTIND -1 ))
-[[ $1 == 'cf' ]] && cf_cli=true
+[[ ${1:-} == 'cf' ]] && cf_cli=true
 [[ -f "${json_file}"  ]] || { echo "${json_file} doesn't exist. copy example file and edit." >&2; exit 1; }
 
 if [[ ${cf_cli} == false ]]; then
@@ -51,7 +51,7 @@ if [[ ${cf_cli} == false ]]; then
 			-ti --rm \
 			--name pcf-tools \
 			-v "${curDir}"/tools/:/home/pcf/tools \
-			mrllsvc/pcf-tools:"${docker_version}" bash rolling-deploy.sh -d "$@"
+			mrllsvc/pcf-tools:"${docker_version}" bash rolling-deploy.sh -d "${json_file}" "$@"
 else
 	echo "running cf cli"
 	shift
@@ -59,5 +59,5 @@ else
 			-ti --rm \
 			--name pcf-tools \
 			-v "${curDir}"/tools/:/home/pcf/tools \
-			mrllsvc/pcf-tools:"${docker_version}" bash cf-cli.sh -d /home/pcf/tools/deploy-params.json "$@"
+			mrllsvc/pcf-tools:"${docker_version}" bash cf-cli.sh -d "${json_file}" "$@"
 fi

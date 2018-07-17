@@ -4,6 +4,7 @@
   "artifact_path": "<artifact_path>",
   "cf": {
     "api_endpoint": "<SYSTEM-DOMAIN>",
+    "buildpack": "https://github.com/cloudfoundry/staticfile-buildpack.git",
     "user": "<CF_USERNAME>",
     "password": "<CF_PASSWORD>",
     "org": "<ORG_NAME>",
