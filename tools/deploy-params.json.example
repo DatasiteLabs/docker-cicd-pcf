@@ -9,6 +9,7 @@
     "password": "<CF_PASSWORD>",
     "org": "<ORG_NAME>",
     "space": "<SPACE_NAME>",
+    "services": ["<SERVICE_1>", "<SERVICE_2>"],
     "apps_domain": {
       "internal": "<internal_domain_for_local_testing>",
       "external": "<shared/external_domain_for_end_users>"

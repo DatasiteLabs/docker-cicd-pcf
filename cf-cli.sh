@@ -39,6 +39,7 @@ declare json_file="${1}"
 # set cf vars
 read -r CF_API_ENDPOINT CF_USER CF_PASSWORD CF_ORG CF_SPACE CF_INTERNAL_APPS_DOMAIN CF_EXTERNAL_APPS_DOMAIN <<<$(jq -r '.cf | "\(.api_endpoint) \(.user) \(.password) \(.org) \(.space) \(.apps_domain.internal) \(.apps_domain.external)"' "${json_file}")
 read -r APP_NAME APP_MEMORY ARTIFACT_PATH BUILD_NUMBER EXTERNAL_APP_HOSTNAME PUSH_OPTIONS <<<$(jq -r '. | "\(.app_name) \(.app_memory) \(.artifact_path) \(.build_number) \(.external_app_hostname) \(.push_options)"' "${json_file}")
+read -r CF_SERVICES <<<$(jq -r '.cf.services[]' "${json_file}")
 
 
 cf api --skip-ssl-validation $CF_API_ENDPOINT

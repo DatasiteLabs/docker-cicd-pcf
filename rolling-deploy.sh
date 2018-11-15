@@ -44,14 +44,16 @@ declare json_file="${1}"
 # set cf vars
 read -r CF_API_ENDPOINT CF_BUILDPACK CF_USER CF_PASSWORD CF_ORG CF_SPACE CF_INTERNAL_APPS_DOMAIN CF_EXTERNAL_APPS_DOMAIN <<<$(jq -r '.cf | "\(.api_endpoint) \(.buildpack) \(.user) \(.password) \(.org) \(.space) \(.apps_domain.internal) \(.apps_domain.external)"' "${json_file}")
 read -r APP_NAME APP_MEMORY ARTIFACT_PATH BUILD_NUMBER EXTERNAL_APP_HOSTNAME PUSH_OPTIONS <<<$(jq -r '. | "\(.app_name) \(.app_memory) \(.artifact_path) \(.build_number) \(.external_app_hostname) \(.push_options)"' "${json_file}")
+read -r CF_SERVICES <<<$(jq -r '.cf.services[]' "${json_file}")
 
 if [[ $is_debug == true ]]; then
 	echo "${CF_API_ENDPOINT}"
-    echo "${CF_BUILDPACK}"    
+    echo "${CF_BUILDPACK}"
 	echo "${CF_USER}"
 	echo "${CF_PASSWORD}"
 	echo "${CF_ORG}"
 	echo "${CF_SPACE}"
+	echo "${CF_SERVICES}"
 	echo "${CF_INTERNAL_APPS_DOMAIN}"
 	echo "${CF_EXTERNAL_APPS_DOMAIN}"
 	echo "${APP_NAME}"
@@ -79,6 +81,10 @@ cf push "${APP_NAME}-${BUILD_NUMBER}" -i 1 -m ${APP_MEMORY} \
   -b "${CF_BUILDPACK}" \
   -p "${ARTIFACT_PATH}" ${PUSH_OPTIONS}
 
+for CF_SERVICE in $CF_SERVICES; do
+  echo "Binding service ${CF_SERVICE}"
+  cf bind-service "${APP_NAME}-${BUILD_NUMBER}" "${CF_SERVICE}"
+done
 
 cf start "${APP_NAME}-${BUILD_NUMBER}"
 
