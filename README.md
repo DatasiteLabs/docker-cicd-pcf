@@ -1,5 +1,9 @@
 # docker-cicd-pcf
 
+
+[![Docker Build Status](https://img.shields.io/docker/build/merrillcorporation/docker-cicd-pcf.svg?style=for-the-badge)](https://hub.docker.com/r/merrillcorporation/docker-cicd-pcf/builds/)
+
+
 alpine based docker container with pcf tools installed. also has: bash, jq, curl, git, tar, gzip...
 Includes a rolloing-deploy.sh script to do a rolling deploy in your foundry.
 
