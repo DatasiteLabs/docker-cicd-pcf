@@ -82,8 +82,10 @@ cf push "${APP_NAME}-${BUILD_NUMBER}" -i 1 -m ${APP_MEMORY} \
   -p "${ARTIFACT_PATH}" ${PUSH_OPTIONS}
 
 for CF_SERVICE in "${CF_SERVICES[@]}"; do
-  echo "Binding service ${CF_SERVICE}"
-  cf bind-service "${APP_NAME}-${BUILD_NUMBER}" "${CF_SERVICE}"
+  if [ -n "${CF_SERVICE}" ]; then
+    echo "Binding service ${CF_SERVICE}"
+    cf bind-service "${APP_NAME}-${BUILD_NUMBER}" "${CF_SERVICE}"
+  fi
 done
 
 cf start "${APP_NAME}-${BUILD_NUMBER}"
