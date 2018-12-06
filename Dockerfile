@@ -8,6 +8,11 @@ RUN apk update && apk add \
 	tar \
 	gzip
 
+# Add jfrog cli
+RUN curl -fL https://getcli.jfrog.io | sh \
+    && mv ./jfrog /usr/local/bin/jfrog \
+    && chmod 777 /usr/local/bin/jfrog
+
 RUN wget -qO- "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx && \
 	mv cf /usr/local/bin && \
 	cf --version
