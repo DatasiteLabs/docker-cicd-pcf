@@ -126,3 +126,12 @@ cf rename "${APP_NAME}-${BUILD_NUMBER}" "${APP_NAME}"
 
 echo "Deleting the orphaned routes"
 cf delete-orphaned-routes -f
+
+# Enable PCF Autoscaling if autoscale.yml file is found
+curDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+AUTOSCALECONFIG="${curDir}/src/main/resources/autoscale.yml"
+if [[ -f "${AUTOSCALECONFIG}" ]]; then
+    echo "Enabling autoscaling for ${APP_NAME} in ${CF_ORG} space ${CF_SPACE}"
+    cf configure-autoscaling "${APP_NAME}" "${AUTOSCALECONFIG}"
+    cf enable-autoscaling "${APP_NAME}"
+    fi
