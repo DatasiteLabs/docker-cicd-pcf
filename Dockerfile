@@ -1,16 +1,13 @@
-FROM alpine:3.7
+FROM golang:1.11-alpine3.8
+RUN apk update
+RUN apk upgrade
 
-RUN apk update && apk add \ 
-	bash \ 
-	jq \ 
-	curl \ 
-	git \
-	tar \
-	gzip
+RUN apk --no-cache add jq bash git curl tar gzip
 
-RUN wget -qO- "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx && \
-	mv cf /usr/local/bin && \
-	cf --version
+
+ADD https://cli.run.pivotal.io/stable?release=linux64-binary /tmp/cf-cli.tgz
+RUN mkdir -p /usr/local/bin && tar -xzf /tmp/cf-cli.tgz -C /usr/local/bin && cf --version && rm -f /tmp/cf-cli.tgz
+RUN git clone https://github.com/cloudfoundry-incubator/app-autoscaler-cli-plugin.git && cd app-autoscaler-cli-plugin && source .envrc && git submodule update --init --recursive && ./scripts/build && cf install-plugin out/ascli -f
 
 RUN addgroup -g 1000 -S pcf && \
 	adduser -u 1000 -S pcf -G pcf
