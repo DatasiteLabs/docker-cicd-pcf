@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -o errexit
+set -o pipefail
 set -o nounset
+[[ ${DEBUG:-} == true ]] && set -o xtrace
 
-declare is_debug=false
 usage() {
     cat <<END
 rolling-deploy.sh [-d] jsonFile
@@ -19,11 +20,8 @@ error () {
     exit "$2"
 } >&2
 
-while getopts ":hd" opt; do
+while getopts ":h" opt; do
     case $opt in
-    	d)
-    		is_debug=true
-    		;;
         h)
             usage
             exit 0
@@ -46,7 +44,7 @@ read -r CF_API_ENDPOINT CF_BUILDPACK CF_USER CF_PASSWORD CF_ORG CF_SPACE CF_INTE
 read -r APP_NAME APP_MEMORY ARTIFACT_PATH BUILD_NUMBER EXTERNAL_APP_HOSTNAME PUSH_OPTIONS <<<$(jq -r '. | "\(.app_name) \(.app_memory) \(.artifact_path) \(.build_number) \(.external_app_hostname) \(.push_options)"' "${json_file}")
 readarray -t CF_SERVICES <<<"$(jq -r '.cf.services[]' "${json_file}")"
 
-if [[ $is_debug == true ]]; then
+if [[ ${DEBUG} == true ]]; then
 	echo "${CF_API_ENDPOINT}"
     echo "${CF_BUILDPACK}"
 	echo "${CF_USER}"
@@ -67,12 +65,12 @@ fi
 cf api --skip-ssl-validation "${CF_API_ENDPOINT}"
 cf login -u "${CF_USER}" -p "${CF_PASSWORD}" -o "${CF_ORG}" -s "${CF_SPACE}"
 
-DEPLOYED_APP=$(cf apps | grep '^'"${APP_NAME}"'' | cut -d' ' -f1)
+DEPLOYED_APP="${APP_NAME}"
 space_guid=$(cf space "${CF_SPACE}" --guid)
 declare -i DEPLOYED_APP_INSTANCES=$(cf curl /v2/apps -X GET -H 'Content-Type: application/x-www-form-urlencoded' -d "q=name:${APP_NAME}" | jq -r --arg DEPLOYED_APP "${DEPLOYED_APP}" \
   ".resources[] | select(.entity.space_guid == \"${space_guid}\") | select(.entity.name == \"${DEPLOYED_APP}\") | .entity.instances | numbers")
 
-[[ $is_debug == true ]] && echo "DEPLOYED APP: ${DEPLOYED_APP} DEPLOYED APP INSTANCES: ${DEPLOYED_APP_INSTANCES}"
+[[ ${DEBUG} == true ]] && echo "DEPLOYED APP: ${DEPLOYED_APP} DEPLOYED APP INSTANCES: ${DEPLOYED_APP_INSTANCES}"
 
 [[ -d ${ARTIFACT_PATH} ]] || (echo "exiting before deploy. ${ARTIFACT_PATH} does not exist" && exit 1)
 
