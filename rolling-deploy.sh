@@ -94,7 +94,7 @@ if [[ ${DEBUG:-} == true ]]; then
 fi
 
 cf api --skip-ssl-validation "${CF_API_ENDPOINT}"
-cf login -u "${CF_USER}" -p "${CF_PASSWORD//[\'\"]}" -o "${CF_ORG}" -s "${CF_SPACE}"
+cf login -u "${CF_USER}" -p "${CF_PASSWORD}" -o "${CF_ORG}" -s "${CF_SPACE}"
 
 DEPLOYED_APP="${APP_NAME}"
 space_guid=$(cf space "${CF_SPACE}" --guid)
