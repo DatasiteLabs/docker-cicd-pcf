@@ -1,6 +1,5 @@
 {
   "app_name": "<application_name>",
-  "app_memory": "<default_memory>",
   "artifact_path": "<artifact_path>",
   "cf": {
     "api_endpoint": "<SYSTEM-DOMAIN>",
@@ -14,6 +13,11 @@
       "internal": "<internal_domain_for_local_testing>",
       "external": "<shared/external_domain_for_end_users>"
     }
+  },
+  "scale": {
+    "instances": 1,
+    "disk_limit": "",
+    "memory_limit": "1024M"
   },
   "external_app_hostname": "<hostname_for_the_app>",
   "push_options": "--no-manifest --no-start --health-check-type=process"
