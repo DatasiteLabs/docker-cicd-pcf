@@ -1,4 +1,5 @@
-FROM alpine:3.7
+FROM alpine:3.9
+ARG PCF_CLI_VERSION
 
 RUN apk update && apk add \ 
 	bash \ 
@@ -13,7 +14,7 @@ RUN curl -fL https://getcli.jfrog.io | sh \
     && mv ./jfrog /usr/local/bin/jfrog \
     && chmod 777 /usr/local/bin/jfrog
 
-RUN wget -qO- "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx && \
+RUN wget -qO- "https://packages.cloudfoundry.org/stable?release=linux64-binary&version=${PCF_CLI_VERSION}&source=github-rel" | tar -zx && \
 	mv cf /usr/local/bin && \
 	cf --version
 
