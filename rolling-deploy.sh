@@ -118,22 +118,24 @@ fi
 
 [[ -d ${ARTIFACT_PATH} ]] || (echo "exiting before deploy. ${ARTIFACT_PATH} does not exist" && exit 1)
 
-cf push "${APP_NAME}-${BUILD_NUMBER}" -i "${SCALE_INSTANCES}" -m "${SCALE_MEMORY}" -k "${SCALE_DISK_LIMIT}" \
-    -n "${APP_NAME}-${BUILD_NUMBER}" -d "${CF_INTERNAL_APPS_DOMAIN}" \
+declare NEW_APP_NAME="${APP_NAME}-${BUILD_NUMBER}"
+
+cf push "${NEW_APP_NAME}" -i 1 -m "${SCALE_MEMORY}" -k "${SCALE_DISK_LIMIT}" \
+    -n "${NEW_APP_NAME}" -d "${CF_INTERNAL_APPS_DOMAIN}" \
     -b "${CF_BUILDPACK}" \
     -p "${ARTIFACT_PATH}" ${PUSH_OPTIONS}
 
 for CF_SERVICE in "${CF_SERVICES[@]}"; do
     if [ -n "${CF_SERVICE}" ]; then
         echo "Binding service ${CF_SERVICE}"
-        cf bind-service "${APP_NAME}-${BUILD_NUMBER}" "${CF_SERVICE}"
+        cf bind-service "${NEW_APP_NAME}" "${CF_SERVICE}"
     fi
 done
 
-cf start "${APP_NAME}-${BUILD_NUMBER}"
+cf start "${NEW_APP_NAME}"
 
-echo "Performing zero-downtime cutover to ${APP_NAME}-${BUILD_NUMBER}"
-cf map-route "${APP_NAME}-${BUILD_NUMBER}" "${CF_EXTERNAL_APPS_DOMAIN}" -n "${EXTERNAL_APP_HOSTNAME}"
+echo "Performing zero-downtime cutover to ${NEW_APP_NAME}"
+cf map-route "${NEW_APP_NAME}" "${CF_EXTERNAL_APPS_DOMAIN}" -n "${EXTERNAL_APP_HOSTNAME}"
 
 echo "A/B deployment"
 if [[ -n "${DEPLOYED_APP}" && -n "${TARGET_INSTANCES}" ]]; then
@@ -145,8 +147,8 @@ if [[ -n "${DEPLOYED_APP}" && -n "${TARGET_INSTANCES}" ]]; then
     while ((${instances} != ${TARGET_INSTANCES})); do
         declare -i instances=${instances}+1
         declare -i old_app_instances=${old_app_instances}-1
-        echo "Scaling up ${APP_NAME}-${BUILD_NUMBER} to ${instances}.."
-        cf scale -i ${instances} "${APP_NAME}-${BUILD_NUMBER}"
+        echo "Scaling up ${NEW_APP_NAME} to ${instances}.."
+        cf scale -i ${instances} "${NEW_APP_NAME}"
 
         if [[ ${DEPLOYED_APP_INSTANCES} -gt 0 ]]; then
             echo "Scaling down ${DEPLOYED_APP} to ${old_app_instances}.."
@@ -167,8 +169,8 @@ fi
 #echo "Renaming ${APP_NAME} to ${APP_NAME}-old"
 #cf rename "${APP_NAME}" "${APP_NAME}-old"
 #
-echo "Renaming ${APP_NAME}-${BUILD_NUMBER} to ${APP_NAME}"
-cf rename "${APP_NAME}-${BUILD_NUMBER}" "${APP_NAME}"
+echo "Renaming ${NEW_APP_NAME} to ${APP_NAME}"
+cf rename "${NEW_APP_NAME}" "${APP_NAME}"
 
 echo "Deleting the orphaned routes"
 cf delete-orphaned-routes -f || echo 'deleting orphaned routes failed.'
