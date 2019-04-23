@@ -9,6 +9,11 @@ Includes a rolling-deploy.sh script to do a rolling deploy in your foundry.
 
 1. change the VERSION file text to your target version to avoid clobbering existing versions. [see versions](#versions)
 
+## Opening a PR
+
+* Use a meaningful title, it will be used as the release title
+* Use a meaningful commit message, it will be used as the release message
+
 ## versions
 
 Manually versioned and latest stored in VERSION file. See https://github.com/cloudfoundry/cli/releases for CLI releases. Version should likely match your target PCF env version, find that from /tools in your PCF env.
@@ -47,3 +52,20 @@ docker run \
             --name pcf-tools \
             mrllsvc/pcf-tools:10 bash
 ```
+
+## releasing a new version
+
+Script assumes the following:
+
+* You have latest code pulled down
+* HEAD on master branch is the code to be released
+
+```bash
+./release.sh
+```
+
+## code style / guidelines
+
+set your IDE to use shellcheck: https://www.shellcheck.net/
+
+use the google shell styleguide: https://google.github.io/styleguide/shell.xml
