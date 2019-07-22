@@ -6,5 +6,5 @@ set -o nounset
 
 readonly __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-docker_version=$(cat "${__dir}"/../VERSION)
-docker build --build-arg PCF_CLI_VERSION="${docker_version}" -f "${DOCKERFILE_PATH}" -t "${IMAGE_NAME}" .
+pcf_cli_version=$(sed s/[-a-zA-Z]*$// < "${__dir}"/../VERSION)
+docker build --build-arg PCF_CLI_VERSION="${pcf_cli_version}" -f "${DOCKERFILE_PATH}" -t "${IMAGE_NAME}" .

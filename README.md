@@ -18,7 +18,9 @@ Includes a rolling-deploy.sh script to do a rolling deploy in your foundry.
 
 Manually versioned and latest stored in VERSION file. See https://github.com/cloudfoundry/cli/releases for CLI releases. Version should likely match your target PCF env version, find that from /tools in your PCF env.
 
-**Use the cli version as the number for clarity.**
+**Use the cli version as the number for clarity and the build hooks use this to download the correct version.**
+
+> If you need to amend the version in between, use '-blah' or '-fix-blah', the hyphen will break the cli version from arbitrary information.
 
 ## getting started
 
