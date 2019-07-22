@@ -125,6 +125,8 @@ cf push "${NEW_APP_NAME}" -i 1 -m "${SCALE_MEMORY}" -k "${SCALE_DISK_LIMIT}" \
     -b "${CF_BUILDPACK}" \
     -p "${ARTIFACT_PATH}" ${PUSH_OPTIONS}
 
+cf set-env "${APP_NAME}" JFROG_ARTIFACTORY_VERSION "${BUILD_NUMBER}"
+
 for CF_SERVICE in "${CF_SERVICES[@]}"; do
     if [ -n "${CF_SERVICE}" ]; then
         echo "Binding service ${CF_SERVICE}"
