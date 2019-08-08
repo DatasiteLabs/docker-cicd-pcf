@@ -136,8 +136,15 @@ done
 
 cf start "${NEW_APP_NAME}"
 
+# do any additional work such as testing, bindings, etc
+# shellcheck disable=SC1090
+[[ -f "${ARTIFACT_PATH}/post-deploy.sh" ]] && . "${ARTIFACT_PATH}/post-deploy.sh"
+
 echo "Performing zero-downtime cutover to ${NEW_APP_NAME}"
 cf map-route "${NEW_APP_NAME}" "${CF_EXTERNAL_APPS_DOMAIN}" -n "${EXTERNAL_APP_HOSTNAME}"
+
+# shellcheck disable=SC1090
+[[ -f "${ARTIFACT_PATH}/post-map-route.sh" ]] && . "${ARTIFACT_PATH}/post-map-route.sh"
 
 echo "A/B deployment"
 if [[ -n "${DEPLOYED_APP}" && -n "${TARGET_INSTANCES}" ]]; then
@@ -171,6 +178,7 @@ fi
 #echo "Renaming ${APP_NAME} to ${APP_NAME}-old"
 #cf rename "${APP_NAME}" "${APP_NAME}-old"
 #
+
 echo "Renaming ${NEW_APP_NAME} to ${APP_NAME}"
 cf rename "${NEW_APP_NAME}" "${APP_NAME}"
 

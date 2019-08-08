@@ -20,7 +20,7 @@ Run the docker container for docker-cicd-pcf:${docker_version}
 END
 }
 
-error () {
+error() {
     echo "Error: $1"
     exit "$2"
 } >&2
@@ -29,45 +29,48 @@ error () {
 
 while getopts ":ht:" opt; do
     case $opt in
-        h)
-            usage
-            exit 0
-            ;;
-        t)
-            target_dir="${__dir}/${OPTARG}"
-            ;;
-        :)
-            error "Option -${OPTARG} is missing an argument" 2
-            ;;
-        \?)
-            error "unkown option: -${OPTARG}" 3
-            ;;
+    h)
+        usage
+        exit 0
+        ;;
+    t)
+        target_dir="${__dir}/${OPTARG}"
+        ;;
+    :)
+        error "Option -${OPTARG} is missing an argument" 2
+        ;;
+    \?)
+        error "unkown option: -${OPTARG}" 3
+        ;;
     esac
 done
 
 declare cf_cli=false
 declare json_file="tools/deploy-params.json"
 
-shift $(( OPTIND -1 ))
+shift $((OPTIND - 1))
 [[ ${1:-} == 'cf' ]] && cf_cli=true
-[[ -f "${json_file}"  ]] || { echo "${json_file} doesn't exist. copy example file and edit." >&2; exit 1; }
+[[ -f "${json_file}" ]] || {
+    echo "${json_file} doesn't exist. copy example file and edit." >&2
+    exit 1
+}
 
 if [[ ${cf_cli} == false ]]; then
-    [[ ! -d "${target_dir:-}" ]] && error "-t targetDir: ${target_dir} doesn't exist." 1
-	echo "running rolling deploy"
-	docker run \
-			-ti --rm \
-			--name docker-cicd-pcf \
-            -e DEBUG="${DEBUG:-}" \
-			-v "${__dir}"/tools/:/home/pcf/tools \
-            -v "${target_dir}"/:/home/pcf/dist \
-			docker-cicd-pcf:"${docker_version}" bash rolling-deploy.sh "${json_file}" "$@"
+    [[ ! -d "${target_dir:-}" ]] && error "-t targetDir: ${target_dir:-} doesn't exist." 1
+    echo "running rolling deploy"
+    docker run \
+        -ti --rm \
+        --name docker-cicd-pcf \
+        -e DEBUG="${DEBUG:-}" \
+        -v "${__dir}"/tools/:/home/pcf/tools \
+        -v "${target_dir}"/:/home/pcf/dist \
+        docker-cicd-pcf:"${docker_version}" bash rolling-deploy.sh "${json_file}" "$@"
 else
-	echo "running cf cli"
-	shift
-	docker run \
-			-ti --rm \
-			--name docker-cicd-pcf \
-			-v "${__dir}"/tools/:/home/pcf/tools \
-			docker-cicd-pcf:"${docker_version}" bash cf-cli.sh "${json_file}" "$@"
+    echo "running cf cli"
+    shift
+    docker run \
+        -ti --rm \
+        --name docker-cicd-pcf \
+        -v "${__dir}"/tools/:/home/pcf/tools \
+        docker-cicd-pcf:"${docker_version}" bash cf-cli.sh "${json_file}" "$@"
 fi
