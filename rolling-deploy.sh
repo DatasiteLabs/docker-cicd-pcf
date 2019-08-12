@@ -35,7 +35,7 @@ while getopts ":h" opt; do
 done
 
 shift $((OPTIND - 1))
-[[ -f ${1} ]] || {
+[[ -f ${1:-} ]] || {
     echo "missing an argument. first argument must be location of json file with vars" >&2
     exit 1
 }
@@ -125,7 +125,7 @@ cf push "${NEW_APP_NAME}" -i 1 -m "${SCALE_MEMORY}" -k "${SCALE_DISK_LIMIT}" \
     -b "${CF_BUILDPACK}" \
     -p "${ARTIFACT_PATH}" ${PUSH_OPTIONS}
 
-cf set-env "${APP_NAME}" JFROG_ARTIFACTORY_VERSION "${BUILD_NUMBER}"
+cf set-env "${NEW_APP_NAME}" JFROG_ARTIFACTORY_VERSION "${BUILD_NUMBER}"
 
 for CF_SERVICE in "${CF_SERVICES[@]}"; do
     if [ -n "${CF_SERVICE}" ]; then
