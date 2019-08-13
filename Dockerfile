@@ -1,12 +1,13 @@
 FROM alpine:3.9
 ARG PCF_CLI_VERSION
 
-RUN apk update && apk add \ 
+RUN apk update && apk add -y \ 
 	bash \ 
 	jq \ 
 	curl \ 
 	git \
 	tar \
+	procps \
 	gzip
 
 # Add jfrog cli
