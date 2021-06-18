@@ -134,6 +134,9 @@ for CF_SERVICE in "${CF_SERVICES[@]}"; do
     fi
 done
 
+# shellcheck disable=SC1090
+[[ -f "${ARTIFACT_PATH}/pre-start.sh" ]] && . "${ARTIFACT_PATH}/pre-start.sh"
+
 cf start "${NEW_APP_NAME}"
 
 # do any additional work such as testing, bindings, etc
