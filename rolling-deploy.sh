@@ -192,4 +192,4 @@ echo "Deleting the orphaned routes"
 cf delete-orphaned-routes -f || echo 'deleting orphaned routes failed.'
 
 # shellcheck disable=SC1090
-[[ -f "${ARTIFACT_PATH}/post-route-cut.sh" ]] && . "${ARTIFACT_PATH}/post-route-cut.sh"
+# [[ -f "${ARTIFACT_PATH}/post-route-cut.sh" ]] && . "${ARTIFACT_PATH}/post-route-cut.sh"
