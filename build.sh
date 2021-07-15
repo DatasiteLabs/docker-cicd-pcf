@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 readonly __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-pcf_cli_version=$(sed s/[-a-zA-Z]*$// <"${__dir}"/VERSION)
 docker_version=$(cat "${__dir}"/VERSION)
+pcf_cli_version="${docker_version%%-*}"
 
 echo "building version: ${docker_version} locally"
 

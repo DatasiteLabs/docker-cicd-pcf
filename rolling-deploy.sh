@@ -102,13 +102,16 @@ declare TARGET_INSTANCES
 declare DEPLOYED_APP_INSTANCES
 DEPLOYED_APP_INSTANCES=$(cf curl /v2/apps -X GET -H 'Content-Type: application/x-www-form-urlencoded' -d "q=name:${DEPLOYED_APP}" | jq -r --arg DEPLOYED_APP "${DEPLOYED_APP}" \
     ".resources[] | select(.entity.space_guid == \"${space_guid}\") | select(.entity.name == \"${DEPLOYED_APP}\") | .entity.instances | numbers")
-
+echo "SCALE: ${SCALE_INSTANCES}, actual: ${DEPLOYED_APP_INSTANCES}"
 # DEPLOYED_APP_INSTANCES is currently deployed and may not match defined if autoscaled or manually scaled
 # SCALE_INSTANCES is read from the json file and is expected target.
 # match DEPLOYED if exists, else match defined. This should prevent stragglers with a mismatch.
 # doesn't handle supporting downsizing on deploy
 if [[ -z "${DEPLOYED_APP_INSTANCES}" ]]; then
     echo "No instances currently deployed."
+    TARGET_INSTANCES="${SCALE_INSTANCES}"
+elif [[ ${SCALE_INSTANCES} -lt ${DEPLOYED_APP_INSTANCES} ]]; then
+    echo "Scale instances is less than deployed instances. Using scale setting."
     TARGET_INSTANCES="${SCALE_INSTANCES}"
 else
     TARGET_INSTANCES="${DEPLOYED_APP_INSTANCES}"
@@ -149,6 +152,13 @@ cf map-route "${NEW_APP_NAME}" "${CF_EXTERNAL_APPS_DOMAIN}" -n "${EXTERNAL_APP_H
 # shellcheck disable=SC1090
 [[ -f "${ARTIFACT_PATH}/post-map-route.sh" ]] && . "${ARTIFACT_PATH}/post-map-route.sh"
 
+if [[ ${DEPLOYED_APP_INSTANCES} -lt ${SCALE_INSTANCES} ]]; then
+    # if current deployed is less than target the roll through fails
+    cf scale -i ${SCALE_INSTANCES} "${DEPLOYED_APP}"
+    echo "Scale mismatch. Scaling to target."
+    TARGET_INSTANCES="${SCALE_INSTANCES}"
+fi
+
 echo "A/B deployment"
 if [[ -n "${DEPLOYED_APP}" && -n "${TARGET_INSTANCES}" ]]; then
 
@@ -165,25 +175,21 @@ if [[ -n "${DEPLOYED_APP}" && -n "${TARGET_INSTANCES}" ]]; then
         if [[ ${DEPLOYED_APP_INSTANCES} -gt 0 ]]; then
             echo "Scaling down ${DEPLOYED_APP} to ${old_app_instances}.."
             cf scale -i ${old_app_instances} "${DEPLOYED_APP}"
-
-            echo "Unmapping the external route from the application ${DEPLOYED_APP}"
-            cf unmap-route "${DEPLOYED_APP}" "${CF_EXTERNAL_APPS_DOMAIN}" -n "${EXTERNAL_APP_HOSTNAME}"
-
-            echo "Deleting the application ${DEPLOYED_APP}"
-            cf delete "${DEPLOYED_APP}" -f
-        else
-            echo "deployed instances was: ${DEPLOYED_APP_INSTANCES}, skipping scaling down, unmapping route and deleting old app."
         fi
     done
-fi
 
-# TODO: move rename into replace delete old app to keep metrics
-#echo "Renaming ${APP_NAME} to ${APP_NAME}-old"
-#cf rename "${APP_NAME}" "${APP_NAME}-old"
-#
+    echo "Unmapping the external route from the application ${DEPLOYED_APP}"
+    cf unmap-route "${DEPLOYED_APP}" "${CF_EXTERNAL_APPS_DOMAIN}" -n "${EXTERNAL_APP_HOSTNAME}"
+
+    echo "Deleting the application ${DEPLOYED_APP}"
+    cf delete "${DEPLOYED_APP}" -f
+fi
 
 echo "Renaming ${NEW_APP_NAME} to ${APP_NAME}"
 cf rename "${NEW_APP_NAME}" "${APP_NAME}"
 
 echo "Deleting the orphaned routes"
 cf delete-orphaned-routes -f || echo 'deleting orphaned routes failed.'
+
+# shellcheck disable=SC1090
+[[ -f "${ARTIFACT_PATH}/post-route-cut.sh" ]] && . "${ARTIFACT_PATH}/post-route-cut.sh"
