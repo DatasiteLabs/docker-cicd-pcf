@@ -1,7 +1,7 @@
-FROM alpine:3.9
+FROM alpine:3.14
 ARG PCF_CLI_VERSION
 
-RUN apk update && apk add -y \ 
+RUN apk update && apk add \ 
 	bash \ 
 	jq \ 
 	curl \ 
