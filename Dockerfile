@@ -1,4 +1,4 @@
-FROM alpine:3.14
+FROM alpine:3.15
 ARG PCF_CLI_VERSION
 
 RUN apk update && apk add \ 
